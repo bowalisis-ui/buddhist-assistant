@@ -187,9 +187,11 @@ export default function App() {
     return map;
   }, [glossary]);
 
-  // Process paragraph text for clickable terms
+  // Process paragraph text for clickable terms (filter out single-character terms to prevent false positive highlights on common words like "有", "生", "行", "識")
   const renderInteractiveParagraph = (text) => {
-    const terms = Object.keys(termMap);
+    // Rule: Single-character terms are NOT highlighted individually in text to prevent noise.
+    // They are only highlighted when appearing in multi-character terms or combined sequences like "貪瞋癡".
+    const terms = Object.keys(termMap).filter(t => t.length > 1);
     if (terms.length === 0) return text;
 
     terms.sort((a, b) => b.length - a.length);
@@ -656,7 +658,7 @@ export default function App() {
               </button>
             </div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem' }}>
-              全庫名詞已打破字數限制，完全依據**教理邏輯（四聖諦、十二因緣分項、三法印、五蘊分項、六度、四相、三毒、法華七喻等）**順序嚴謹分區呈現。
+              全庫名詞已依據**教理邏輯（四聖諦、十二因緣分項、三法印、五蘊分項、六度、四相、三毒、法華七喻等）**順序嚴謹分區呈現。
             </p>
 
             {Object.keys(groupedGlossary).map((catName, catIdx) => (
@@ -723,7 +725,7 @@ export default function App() {
               <button className="chip-btn" onClick={() => handleSendAiMessage('四聖諦')}>四聖諦</button>
               <button className="chip-btn" onClick={() => handleSendAiMessage('十二因緣')}>十二因緣</button>
               <button className="chip-btn" onClick={() => handleSendAiMessage('五蘊')}>五蘊</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('火宅喻')}>火宅喻</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('貪瞋癡')}>貪瞋癡</button>
             </div>
 
             <div className="ai-input-area" style={{ borderRadius: 12, marginTop: '0.5rem' }}>
