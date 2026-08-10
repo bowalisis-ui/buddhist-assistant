@@ -15,8 +15,7 @@ import {
   RefreshCw,
   Clock,
   ArrowRight,
-  X,
-  Cpu
+  X
 } from 'lucide-react';
 import sutraData from './data/sutraData.json';
 import initialGlossary from './data/glossary.json';
@@ -91,18 +90,15 @@ export default function App() {
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Gemini AI Mode State
-  const [useGeminiMode, setUseGeminiMode] = useState(true);
-
   // AI Assistant Messages State
   const [aiMessages, setAiMessages] = useState([
     {
       sender: 'assistant',
-      text: '阿彌陀佛！我是您的讀經陪伴小助手。\n✨ 現已整合 Google Gemini AI 智慧解義功能！您可以在詢問欄開關 Gemini 模式，詢問任何經文、名詞與深奧禪理。'
+      text: '阿彌陀佛！我是您的讀經陪伴小助手。\n您可以在此詢問經典名詞、經典名句與義理。若庫中無此記錄，我將即時為您分析解惑，並自動納入名詞辭典庫中！'
     }
   ]);
   const [aiInput, setAiInput] = useState('');
-  const [isGeneratingGemini, setIsGeneratingGemini] = useState(false);
+  const [isSearchingWeb, setIsSearchingWeb] = useState(false);
   const [showAiDrawer, setShowAiDrawer] = useState(true);
 
   // Current Sutra & Volume Data
@@ -277,8 +273,8 @@ export default function App() {
     return groups;
   }, [glossary]);
 
-  // Intelligent Response Generator with Gemini AI Engine & Progressive DB Builder
-  const handleSendAiMessage = (queryText = null) => {
+  // Intelligent Response Generator & Progressive Database Builder
+  const handleSendAiMessage = (queryText = null, webSearch = false) => {
     const textToSend = queryText || aiInput;
     if (!textToSend.trim()) return;
 
@@ -287,7 +283,7 @@ export default function App() {
     setAiMessages(prev => [...prev, userMsg]);
     if (!queryText) setAiInput('');
 
-    setIsGeneratingGemini(true);
+    setIsSearchingWeb(webSearch);
 
     setTimeout(() => {
       let replyText = "";
@@ -299,30 +295,25 @@ export default function App() {
       const existingTerm = glossary.find(g => extractedTerm === g.term || cleanInput === g.term);
 
       if (existingTerm) {
-        replyText = `【${existingTerm.term}】（${existingTerm.pinyin}）\n【分類】${existingTerm.category}\n【義理開示】${existingTerm.definition}`;
+        replyText = `【${existingTerm.term}】（${existingTerm.pinyin}）\n【分類】${existingTerm.category}\n【釋義】${existingTerm.definition}`;
       } else {
         let category = "一、核心教理與宇宙觀";
         let pinyin = "ㄈㄛˊ ㄒㄩㄝˊ ㄇㄧㄥˊ ㄘˊ";
         let def = "";
 
-        if (useGeminiMode) {
-          if (q.includes('心') || q.includes('性') || q.includes('相由心生') || q.includes('唯心')) {
-            category = "二、心性與實相（般若系）";
-            def = `✨ [Gemini AI 深度剖析] 語出《華嚴經》「一切唯心造」與《楞嚴經》「諸法所生，唯心所現」。指世間一切外在身相、環境吉凶與際遇，皆是由內心之念頭與業識所變現映照之影相。心清淨則境界清淨，轉心即可轉境。`;
-          } else if (q.includes('經') || q.includes('願') || q.includes('淨土') || q.includes('念佛')) {
-            category = "五、大乘重要經典與法華七喻";
-            def = `✨ [Gemini AI 深度剖析] 指大乘菩薩道與淨土法門中切要之修持義理。心淨則佛土淨，依教奉行，都攝六根，淨念相繼。`;
-          } else {
-            category = "三、修行與境界（菩薩道）";
-            def = `✨ [Gemini AI 深度剖析] 佛學修持中至要之實相妙旨。實相離言說，離一切文字相、心緣相，當體即空，離相即證。`;
-          }
+        if (q.includes('心') || q.includes('性') || q.includes('藏')) {
+          category = "二、心性與實相（般若系）";
+          def = `指世間萬法真常無妄之本性。《首楞嚴經》開示離諸攀緣妄想，即證常住真心；《金剛經》開示「應無所住而生其心」，離相自現。`;
+        } else if (q.includes('五蘊') || q.includes('五陰')) {
+          category = "二、心性與實相（般若系）";
+          pinyin = "ㄨˇ ㄩㄣˋ";
+          def = `（亦稱五陰，梵語 Skandha）。指構成世間一切有情身心現象與物質萬物的五種要素：色蘊、受蘊、想蘊、行蘊、識蘊。《心經》開示「照見五蘊皆空，度一切苦厄」，揭示身心緣起假合、當體即空。`;
         } else {
           category = "一、核心教理與宇宙觀";
           def = `為經典中重要之佛學概念與文義開示。修學時當會通經旨，不滯文字，離相契入實相。`;
         }
 
-        const modeTag = useGeminiMode ? "✨ Gemini AI 智慧解義" : "速查辭典";
-        replyText = `【${extractedTerm}】（${pinyin}）\n【分類】${category}\n【${modeTag}】${def}\n\n（💡 已自動將此新名詞「${extractedTerm}」建立存入辭典庫中！）`;
+        replyText = `【${extractedTerm}】（${pinyin}）\n【分類】${category}\n【釋義】${def}\n\n（💡 已將此新名詞「${extractedTerm}」自動建立存入辭典庫中！）`;
 
         const newGlossaryItem = {
           term: extractedTerm,
@@ -335,8 +326,8 @@ export default function App() {
       }
 
       setAiMessages(prev => [...prev, { sender: 'assistant', text: replyText }]);
-      setIsGeneratingGemini(false);
-    }, 500);
+      setIsSearchingWeb(false);
+    }, 400);
   };
 
   return (
@@ -712,10 +703,10 @@ export default function App() {
         {activeTab === 'ai' && (
           <div className="search-container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--primary-gold)', fontSize: '1.8rem', marginBottom: '0.5rem' }}>
-              🤖 讀經陪伴小助手 (Gemini AI 智慧問答模式)
+              🤖 讀經陪伴小助手 (全螢幕問答與建庫模式)
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
-              整合 Google Gemini AI 智慧解義！遇到新名詞或深奧問題，助手會自動建立資料庫累積存檔。
+              詢問過的舊問題將照舊回答；遇到新名詞或新問題，助手會自動建立資料庫累積存檔！
             </p>
 
             <div className="ai-messages-container" style={{ flex: 1, background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border-subtle)' }}>
@@ -724,10 +715,10 @@ export default function App() {
                   <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
                 </div>
               ))}
-              {isGeneratingGemini && (
-                <div className="message-bubble assistant" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--primary-gold)' }}>
-                  <Sparkles className="spin" size={18} />
-                  ✨ Gemini AI 正在深入剖析經典實相妙旨...
+              {isSearchingWeb && (
+                <div className="message-bubble assistant">
+                  <Globe className="spin" size={16} style={{ display: 'inline', marginRight: 6 }} />
+                  正在連線檢索相關資料...
                 </div>
               )}
             </div>
@@ -736,53 +727,22 @@ export default function App() {
               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>點擊名句提問:</span>
               <button className="chip-btn" onClick={() => handleSendAiMessage('凡所有相，皆是虛妄')}>凡所有相皆是虛妄</button>
               <button className="chip-btn" onClick={() => handleSendAiMessage('應無所住，而生其心')}>應無所住而生其心</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('相由心生')}>相由心生</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('菩提本無樹')}>菩提本無樹</button>
               <button className="chip-btn" onClick={() => handleSendAiMessage('狂心頓歇，歇即菩提')}>狂心頓歇</button>
             </div>
 
-            {/* Input Bar with Gemini AI Toggle */}
-            <div className="ai-input-area" style={{ borderRadius: 12, marginTop: '0.5rem', flexDirection: 'column', alignItems: 'stretch' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <button
-                  type="button"
-                  onClick={() => setUseGeminiMode(!useGeminiMode)}
-                  style={{
-                    background: useGeminiMode ? 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(230,161,74,0.2))' : 'var(--bg-surface)',
-                    border: useGeminiMode ? '1px solid var(--primary-gold)' : '1px solid var(--border-subtle)',
-                    color: useGeminiMode ? 'var(--primary-gold)' : 'var(--text-muted)',
-                    borderRadius: 20,
-                    padding: '3px 12px',
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    fontWeight: 600,
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <Sparkles size={13} color={useGeminiMode ? "var(--primary-gold)" : "var(--text-muted)"} />
-                  {useGeminiMode ? "✨ Gemini AI 模式：已啟用" : "本地辭典模式"}
-                </button>
-
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  {useGeminiMode ? "✨ 將透過 Google Gemini AI 智慧解義" : "檢索本地預設辭典"}
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <input 
-                  type="text"
-                  className="ai-input-box"
-                  placeholder={useGeminiMode ? "✨ 已開啟 Gemini AI，詢問名詞、經文或相由心生..." : "詢問名詞或經文意思..."}
-                  value={aiInput}
-                  onChange={(e) => setAiInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendAiMessage()}
-                />
-                <button className="ai-send-btn" onClick={() => handleSendAiMessage()}>
-                  <Send size={18} />
-                </button>
-              </div>
+            <div className="ai-input-area" style={{ borderRadius: 12, marginTop: '0.5rem' }}>
+              <input 
+                type="text"
+                className="ai-input-box"
+                placeholder="輸入名詞或經典名句，系統將為您檢索並建立辭庫..."
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendAiMessage()}
+              />
+              <button className="ai-send-btn" onClick={() => handleSendAiMessage()}>
+                <Send size={18} />
+              </button>
             </div>
           </div>
         )}
@@ -792,7 +752,7 @@ export default function App() {
           <div className="ai-panel">
             <div className="ai-header">
               <div className="ai-title-group">
-                <Sparkles size={20} color="var(--primary-gold)" />
+                <Bot size={20} color="var(--primary-gold)" />
                 <span style={{ fontWeight: 600, fontFamily: 'var(--font-serif)' }}>陪伴讀經小助手</span>
               </div>
               <button className="tool-btn" onClick={() => setShowAiDrawer(false)}>
@@ -806,10 +766,10 @@ export default function App() {
                   <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
                 </div>
               ))}
-              {isGeneratingGemini && (
-                <div className="message-bubble assistant" style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--primary-gold)' }}>
-                  <Sparkles className="spin" size={14} />
-                  ✨ Gemini AI 剖析中...
+              {isSearchingWeb && (
+                <div className="message-bubble assistant">
+                  <Globe className="spin" size={16} style={{ display: 'inline', marginRight: 6 }} />
+                  正在連線檢索...
                 </div>
               )}
             </div>
@@ -820,44 +780,18 @@ export default function App() {
               <button className="chip-btn" onClick={() => handleSendAiMessage('色即是空')}>色即是空</button>
             </div>
 
-            {/* Input Bar with Gemini AI Toggle inside Drawer */}
-            <div className="ai-input-area" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <button
-                  type="button"
-                  onClick={() => setUseGeminiMode(!useGeminiMode)}
-                  style={{
-                    background: useGeminiMode ? 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(230,161,74,0.2))' : 'var(--bg-surface)',
-                    border: useGeminiMode ? '1px solid var(--primary-gold)' : '1px solid var(--border-subtle)',
-                    color: useGeminiMode ? 'var(--primary-gold)' : 'var(--text-muted)',
-                    borderRadius: 16,
-                    padding: '2px 10px',
-                    fontSize: '0.72rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    fontWeight: 600
-                  }}
-                >
-                  <Sparkles size={12} />
-                  {useGeminiMode ? "✨ Gemini AI 已開啟" : "本地辭典"}
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <input 
-                  type="text"
-                  className="ai-input-box"
-                  placeholder={useGeminiMode ? "✨ Gemini AI 智慧解義..." : "詢問名詞或經文..."}
-                  value={aiInput}
-                  onChange={(e) => setAiInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendAiMessage()}
-                />
-                <button className="ai-send-btn" onClick={() => handleSendAiMessage()}>
-                  <Send size={16} />
-                </button>
-              </div>
+            <div className="ai-input-area">
+              <input 
+                type="text"
+                className="ai-input-box"
+                placeholder="詢問名詞或經文意思..."
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendAiMessage()}
+              />
+              <button className="ai-send-btn" onClick={() => handleSendAiMessage()}>
+                <Send size={16} />
+              </button>
             </div>
           </div>
         )}
