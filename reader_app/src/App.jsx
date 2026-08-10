@@ -94,7 +94,7 @@ export default function App() {
   const [aiMessages, setAiMessages] = useState([
     {
       sender: 'assistant',
-      text: '阿彌陀佛！我是您的讀經陪伴小助手。\n您可以在此詢問經典名詞、經典名句與義理。若庫中無此記錄，我將即時為您分析解惑，並自動納入名詞辭典庫中！'
+      text: '阿彌陀佛！我是您的讀經陪伴小助手。\n您在此提出的任何問題，我都將先交由 Gemini AI 進行網路上網檢索與義理整理，再為您提供結構化的剖析報告！\n（💡 備註：名詞手冊維護由 Antigravity 負責編修，本助手專注於 Gemini AI 智慧解惑。）'
     }
   ]);
   const [aiInput, setAiInput] = useState('');
