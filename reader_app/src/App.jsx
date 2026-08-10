@@ -273,8 +273,8 @@ export default function App() {
     return groups;
   }, [glossary]);
 
-  // Antigravity Strict Glossary Lookup Handler (Replies "抱歉 查不到" if not found)
-  const handleSendAiMessage = (queryText = null) => {
+  // Live Gemini API & Strict Glossary Lookup Handler
+  const handleSendAiMessage = async (queryText = null) => {
     const textToSend = queryText || aiInput;
     if (!textToSend.trim()) return;
 
@@ -285,21 +285,19 @@ export default function App() {
 
     setIsSearchingWeb(true);
 
-    setTimeout(() => {
-      let term = cleanInput.replace(/請問|是什麼|什麼意思|意思|解說|法門|有哪些|嗎|\?|？|與|及/g, '').trim();
-      if (!term) term = cleanInput;
+    let term = cleanInput.replace(/請問|是什麼|什麼意思|意思|解說|法門|有哪些|嗎|\?|？|與|及/g, '').trim();
+    if (!term) term = cleanInput;
 
-      // 1. Check local glossary match
-      const matchedTerm = glossary.find(g => 
-        g.term === term || 
-        cleanInput.includes(g.term) || 
-        (term.length >= 2 && g.term.includes(term))
-      );
+    // 1. Check local glossary match
+    const matchedTerm = glossary.find(g => 
+      g.term === term || 
+      cleanInput.includes(g.term) || 
+      (term.length >= 2 && g.term.includes(term))
+    );
 
-      let reportText = "";
-
-      if (matchedTerm) {
-        reportText = `✨ 【小助手 義理整理報告】
+    if (matchedTerm) {
+      setTimeout(() => {
+        const reportText = `✨ 【小助手 義理整理報告】
 ───────────────
 📌 查詢項目：『${matchedTerm.term}』${matchedTerm.pinyin ? `（${matchedTerm.pinyin}）` : ''}
 
@@ -312,12 +310,55 @@ ${matchedTerm.definition}
 🌸 【修學指引與妙用】
 修學時當會通經旨脈絡，隨文入觀。於日常行住坐臥間，照見身心緣起假合，遠離妄想執著，契入自性真常。
 ───────────────`;
-      } else {
-        // Strictly reply "抱歉 查不到" if not in glossary
-        reportText = "抱歉 查不到";
-      }
+        setAiMessages(prev => [...prev, { sender: 'assistant', text: reportText }]);
+        setIsSearchingWeb(false);
+      }, 300);
+      return;
+    }
 
-      setAiMessages(prev => [...prev, { sender: 'assistant', text: reportText }]);
+    // 2. Try calling live Gemini API if API key is provided in VITE_GEMINI_API_KEY
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (apiKey) {
+      try {
+        const prompt = `你是讀經陪伴小助手。請針對使用者詢問的經典名詞、經典名句或經義問題：「${cleanInput}」，進行權威典籍檢索與義理整理。
+請嚴格輸出為以下格式：
+✨ 【小助手 義理整理報告】
+───────────────
+📌 查詢項目：『${term}』
+
+📜 【出處與典故】
+（簡述出自何經何卷或大乘法門脈絡）
+
+💡 【義理剖析】
+（說明核心教理與實相勝義）
+
+🌸 【修學指引與妙用】
+（說明日常觀照與修持應用）
+───────────────`;
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+          const aiReply = data.candidates[0].content.parts[0].text;
+          setAiMessages(prev => [...prev, { sender: 'assistant', text: aiReply }]);
+          setIsSearchingWeb(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Live Gemini API call error:", err);
+      }
+    }
+
+    // 3. Fallback: If not in glossary and Gemini API unavailable/over quota, reply "抱歉 查不到"
+    setTimeout(() => {
+      setAiMessages(prev => [...prev, { sender: 'assistant', text: "抱歉 查不到" }]);
       setIsSearchingWeb(false);
     }, 300);
   };
