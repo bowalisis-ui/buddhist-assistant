@@ -30,16 +30,16 @@ export async function askSutraAssistant(userQuery, currentSutraText = "") {
       });
     } catch (e) {
       response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.0-flash-lite',
         config: { systemInstruction: systemPrompt, temperature: 0.7 },
         contents: prompt,
       });
     }
 
-    return response.text || "阿彌陀佛，目前網路或連線稍有延遲，請稍後再試。";
+    return response.text || "阿彌陀佛，目前網路連線稍有延遲，請稍後再試。";
   } catch (error) {
     console.error("Gemini API 呼叫失敗：", error);
-    return "阿彌陀佛，目前網路或連線稍有延遲，請稍後再試。";
+    return "阿彌陀佛，目前網路連線稍有延遲，請稍後再試。";
   }
 }
 
@@ -68,7 +68,7 @@ export async function askSutraAssistantStream(userQuery, currentSutraText = "", 
       });
     } catch (errStream) {
       responseStream = await ai.models.generateContentStream({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.0-flash-lite',
         config: { systemInstruction: systemPrompt, temperature: 0.7 },
         contents: prompt,
       });
@@ -86,7 +86,7 @@ export async function askSutraAssistantStream(userQuery, currentSutraText = "", 
     return accumulatedText;
   } catch (error) {
     console.error("Gemini Streaming 呼叫失敗：", error);
-    const fallback = "阿彌陀佛，目前網路或連線稍有延遲，請稍後再試。";
+    const fallback = "阿彌陀佛，目前網路連線稍有延遲，請稍後再試。";
     if (onChunk) onChunk(fallback);
     return fallback;
   }
