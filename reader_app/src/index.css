@@ -300,7 +300,7 @@ body {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* Highlighted Term in Text */
+/* Standard Highlighted Term in Text */
 .highlight-term {
   color: var(--primary-gold);
   border-bottom: 1px dotted var(--primary-gold);
@@ -312,6 +312,28 @@ body {
 .highlight-term:hover {
   background: var(--primary-gold-glow);
   border-bottom-style: solid;
+}
+
+/* Famous Verse Highlight Badge in Scripture Text */
+.famous-verse-highlight {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(230, 161, 74, 0.15));
+  color: #FFE082;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: 6px;
+  padding: 2px 8px;
+  margin: 0 2px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);
+  transition: all 0.25s ease;
+  display: inline;
+}
+
+.famous-verse-highlight:hover {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.45), rgba(230, 161, 74, 0.35));
+  border-color: var(--primary-gold);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+  color: #FFF;
 }
 
 .search-match-text {

@@ -94,7 +94,7 @@ export default function App() {
   const [aiMessages, setAiMessages] = useState([
     {
       sender: 'assistant',
-      text: '阿彌陀佛！我是您的讀經陪伴小助手。\n您可以在此詢問經典名詞、經文義理。若庫中無此記錄，我將即時為您分析解惑，並自動納入名詞辭典庫中！'
+      text: '阿彌陀佛！我是您的讀經陪伴小助手。\n您可以在此詢問經典名詞、經典名句與義理。若庫中無此記錄，我將即時為您分析解惑，並自動納入名詞辭典庫中！'
     }
   ]);
   const [aiInput, setAiInput] = useState('');
@@ -187,10 +187,8 @@ export default function App() {
     return map;
   }, [glossary]);
 
-  // Process paragraph text for clickable terms (filter out single-character terms to prevent false positive highlights on common words like "有", "生", "行", "識")
+  // Process paragraph text for clickable terms & prominent famous verses
   const renderInteractiveParagraph = (text) => {
-    // Rule: Single-character terms are NOT highlighted individually in text to prevent noise.
-    // They are only highlighted when appearing in multi-character terms or combined sequences like "貪瞋癡".
     const terms = Object.keys(termMap).filter(t => t.length > 1);
     if (terms.length === 0) return text;
 
@@ -200,15 +198,17 @@ export default function App() {
     const parts = text.split(regex);
 
     return parts.map((part, i) => {
-      if (termMap[part]) {
+      const matched = termMap[part];
+      if (matched) {
+        const isFamousVerse = matched.isVerse || matched.category === "🌸 經典名句與法言偈頌";
         return (
           <span 
             key={i} 
-            className="highlight-term"
+            className={isFamousVerse ? "famous-verse-highlight" : "highlight-term"}
             onClick={() => handleTermClick(part)}
-            title={`點擊查看名詞註釋：${part}`}
+            title={isFamousVerse ? `🌸 經典名句義理點擊解義：${part}` : `點擊查看名詞註釋：${part}`}
           >
-            {part}
+            {isFamousVerse ? `📿 ${part}` : part}
           </span>
         );
       }
@@ -216,14 +216,17 @@ export default function App() {
     });
   };
 
-  // Handle Clicking a Term in Text
+  // Handle Clicking a Term or Famous Verse in Text
   const handleTermClick = (term) => {
     const item = termMap[term];
     if (item) {
-      const answer = `【${item.term}】（${item.pinyin}）\n【分類】${item.category}\n【釋義】${item.definition}`;
+      const isVerse = item.isVerse || item.category === "🌸 經典名句與法言偈頌";
+      const header = isVerse ? `【🌸 經典名句】${item.term}` : `【${item.term}】（${item.pinyin}）`;
+      const answer = `${header}\n【分類】${item.category}\n【義理開示】${item.definition}`;
+      
       setAiMessages(prev => [
         ...prev,
-        { sender: 'user', text: `請問「${term}」是什麼意思？` },
+        { sender: 'user', text: `請問「${term}」的妙旨義理為何？` },
         { sender: 'assistant', text: answer }
       ]);
       setShowAiDrawer(true);
@@ -591,7 +594,7 @@ export default function App() {
               <input 
                 type="text"
                 className="search-input-field"
-                placeholder="請輸入經文關鍵字（例如：五蘊、四聖諦、十二因緣、火宅喻）..."
+                placeholder="請輸入經文關鍵字（例如：五蘊、四聖諦、十二因緣、凡所有相皆是虛妄）..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -646,7 +649,7 @@ export default function App() {
           <div className="glossary-container">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--primary-gold)', fontSize: '1.8rem' }}>
-                📚 經典名詞與文義辭典庫 (按教理邏輯脈絡排列：共 {glossary.length} 筆)
+                📚 經典名詞與文義辭典庫 (按教理邏輯與經典名句分區：共 {glossary.length} 筆)
               </h2>
               <button 
                 className="chip-btn" 
@@ -658,7 +661,7 @@ export default function App() {
               </button>
             </div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem' }}>
-              全庫名詞已依據**教理邏輯（四聖諦、十二因緣分項、三法印、五蘊分項、六度、四相、三毒、法華七喻等）**順序嚴謹分區呈現。
+              全庫收錄佛學名詞與 **🌸 經典名句與法言偈頌**，經文中名句享有極致輝光標籤與點擊解義。
             </p>
 
             {Object.keys(groupedGlossary).map((catName, catIdx) => (
@@ -686,7 +689,7 @@ export default function App() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div className="glossary-term">{item.term}</div>
                       </div>
-                      <div className="glossary-pinyin">{item.pinyin}</div>
+                      {item.pinyin && <div className="glossary-pinyin">{item.pinyin}</div>}
                       <div className="glossary-def">{item.definition}</div>
                     </div>
                   ))}
@@ -721,18 +724,18 @@ export default function App() {
             </div>
 
             <div className="ai-suggestions" style={{ marginTop: '1rem', borderRadius: 12 }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>快速點擊提問:</span>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('四聖諦')}>四聖諦</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('十二因緣')}>十二因緣</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('五蘊')}>五蘊</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('貪瞋癡')}>貪瞋癡</button>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>點擊名句提問:</span>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('凡所有相，皆是虛妄')}>凡所有相皆是虛妄</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('應無所住，而生其心')}>應無所住而生其心</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('菩提本無樹')}>菩提本無樹</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('狂心頓歇，歇即菩提')}>狂心頓歇</button>
             </div>
 
             <div className="ai-input-area" style={{ borderRadius: 12, marginTop: '0.5rem' }}>
               <input 
                 type="text"
                 className="ai-input-box"
-                placeholder="輸入名詞或問題，系統將為您檢索並建立辭庫..."
+                placeholder="輸入名詞或經典名句，系統將為您檢索並建立辭庫..."
                 value={aiInput}
                 onChange={(e) => setAiInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendAiMessage()}
@@ -772,9 +775,9 @@ export default function App() {
             </div>
 
             <div className="ai-suggestions">
-              <button className="chip-btn" onClick={() => handleSendAiMessage('四聖諦')}>四聖諦</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('十二因緣')}>十二因緣</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('五蘊')}>五蘊</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('凡所有相，皆是虛妄')}>凡所有相皆是虛妄</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('應無所住，而生其心')}>應無所住而生其心</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('色即是空')}>色即是空</button>
             </div>
 
             <div className="ai-input-area">
