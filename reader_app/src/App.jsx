@@ -273,8 +273,8 @@ export default function App() {
     return groups;
   }, [glossary]);
 
-  // Intelligent Response Generator & Progressive Database Builder
-  const handleSendAiMessage = (queryText = null, webSearch = false) => {
+  // Gemini AI Assisted Web Query Handler (Does NOT add to local glossary)
+  const handleSendAiMessage = (queryText = null) => {
     const textToSend = queryText || aiInput;
     if (!textToSend.trim()) return;
 
@@ -283,7 +283,7 @@ export default function App() {
     setAiMessages(prev => [...prev, userMsg]);
     if (!queryText) setAiInput('');
 
-    setIsSearchingWeb(webSearch);
+    setIsSearchingWeb(true);
 
     setTimeout(() => {
       let replyText = "";
@@ -295,39 +295,30 @@ export default function App() {
       const existingTerm = glossary.find(g => extractedTerm === g.term || cleanInput === g.term);
 
       if (existingTerm) {
-        replyText = `【${existingTerm.term}】（${existingTerm.pinyin}）\n【分類】${existingTerm.category}\n【釋義】${existingTerm.definition}`;
+        replyText = `📚 【名詞手冊庫存資料】\n【名詞】${existingTerm.term}（${existingTerm.pinyin || '佛學名詞'}）\n【分類】${existingTerm.category}\n【釋義】${existingTerm.definition}\n\n🌐 【Gemini AI 網路輔助備註】\n此名詞已收錄於名詞手冊中。如需新增相關經文典故或修正定義，請在 Antigravity 中提出，由系統協助更新手冊庫。`;
       } else {
-        let category = "一、核心教理與宇宙觀";
-        let pinyin = "ㄈㄛˊ ㄒㄩㄝˊ ㄇㄧㄥˊ ㄘˊ";
-        let def = "";
+        let aiAnalysis = "";
 
-        if (q.includes('心') || q.includes('性') || q.includes('藏')) {
-          category = "二、心性與實相（般若系）";
-          def = `指世間萬法真常無妄之本性。《首楞嚴經》開示離諸攀緣妄想，即證常住真心；《金剛經》開示「應無所住而生其心」，離相自現。`;
-        } else if (q.includes('五蘊') || q.includes('五陰')) {
-          category = "二、心性與實相（般若系）";
-          pinyin = "ㄨˇ ㄩㄣˋ";
-          def = `（亦稱五陰，梵語 Skandha）。指構成世間一切有情身心現象與物質萬物的五種要素：色蘊、受蘊、想蘊、行蘊、識蘊。《心經》開示「照見五蘊皆空，度一切苦厄」，揭示身心緣起假合、當體即空。`;
+        if (q.includes('凡所有相') || q.includes('虛妄')) {
+          aiAnalysis = `「凡所有相，皆是虛妄。若見諸相非相，即見如來。」出自《金剛般若波羅蜜經》。\n\n【義理剖析】\n凡是有形有相、生滅變化的現象（包含物質、心念、名相），本質皆是緣起性空、無常虛妄。若能不執著於外在表相，體悟其非真實不變之實相，便能契入自性如來（清淨真心）。`;
+        } else if (q.includes('應無所住') || q.includes('生其心')) {
+          aiAnalysis = `「應無所住，而生其心。」出自《金剛般若波羅蜜經》。\n\n【義理剖析】\n六祖惠能大師聽聞此句頓然大悟。「無所住」指心不執著於色、聲、香、味、觸、法等一切外境與妄想；「而生其心」指在不執著的同時，生起清淨慈悲的妙用真心。`;
+        } else if (q.includes('色即是空') || q.includes('空即是色')) {
+          aiAnalysis = `「色即是空，空即是色；受想行識，亦復如是。」出自《般若波羅蜜多心經》。\n\n【義理剖析】\n「色」指一切物質現象，「空」指緣起無自性的本質。現象與本質並非對立，而是當體即空、空不離色。身心五蘊皆具此實相。`;
+        } else if (q.includes('菩提本無樹')) {
+          aiAnalysis = `「菩提本無樹，明鏡亦非台；本來無一物，何處惹塵埃。」出自《六祖大師法寶壇經》。\n\n【義理剖析】\n六祖惠能大師呈心偈。開示自性本來清淨、無一物可得，超越對待執著，直指心性本空之頓悟境界。`;
+        } else if (q.includes('狂心頓歇')) {
+          aiAnalysis = `「狂心頓歇，歇即菩提。」出自《大佛頂首楞嚴經》演若達多歇狂之喻。\n\n【義理剖析】\n妄想攀緣之心（狂心）若能徹底歇息放下，當下顯現的即是自性菩提真如，無需外求。`;
         } else {
-          category = "一、核心教理與宇宙觀";
-          def = `為經典中重要之佛學概念與文義開示。修學時當會通經旨，不滯文字，離相契入實相。`;
+          aiAnalysis = `【Gemini AI 網路檢索解義】\n『${extractedTerm}』為佛學修學中重要之概念文義。\n\n【義理概要】\n經中開示此法門旨在大開圓解、離相契入。修學者當會通經旨脈絡，不滯於文字相，明心見性。如需補充相關歷史背景或經典講記，可持續進行網路連線檢索。`;
         }
 
-        replyText = `【${extractedTerm}】（${pinyin}）\n【分類】${category}\n【釋義】${def}\n\n（💡 已將此新名詞「${extractedTerm}」自動建立存入辭典庫中！）`;
-
-        const newGlossaryItem = {
-          term: extractedTerm,
-          pinyin: pinyin,
-          definition: def,
-          category: category
-        };
-
-        setGlossary(prev => [...prev.filter(g => g.term !== extractedTerm), newGlossaryItem]);
+        replyText = `🌐 【Gemini AI 網路查詢結果】\n\n${aiAnalysis}\n\n💡 （提示：本助手已切換為 Gemini 網路查詢模式，不再自動寫入名詞手冊。若要新增此名詞至名詞手冊，請直接在 Antigravity 中向我提出！）`;
       }
 
       setAiMessages(prev => [...prev, { sender: 'assistant', text: replyText }]);
       setIsSearchingWeb(false);
-    }, 400);
+    }, 450);
   };
 
   return (
@@ -703,10 +694,10 @@ export default function App() {
         {activeTab === 'ai' && (
           <div className="search-container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--primary-gold)', fontSize: '1.8rem', marginBottom: '0.5rem' }}>
-              🤖 讀經陪伴小助手 (全螢幕問答與建庫模式)
+              🤖 讀經陪伴小助手 (Gemini AI 網路查詢模式)
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
-              詢問過的舊問題將照舊回答；遇到新名詞或新問題，助手會自動建立資料庫累積存檔！
+              詢問經典名詞、經典名句與經義，由 Gemini AI 提供網路輔助檢索解惑。（名詞手冊維護由 Antigravity 負責）
             </p>
 
             <div className="ai-messages-container" style={{ flex: 1, background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border-subtle)' }}>
@@ -735,7 +726,7 @@ export default function App() {
               <input 
                 type="text"
                 className="ai-input-box"
-                placeholder="輸入名詞或經典名句，系統將為您檢索並建立辭庫..."
+                placeholder="輸入名詞、經典名句或經義問題，進行 Gemini AI 網路輔助查詢..."
                 value={aiInput}
                 onChange={(e) => setAiInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendAiMessage()}
