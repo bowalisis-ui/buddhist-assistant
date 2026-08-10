@@ -10,40 +10,6 @@ const systemPrompt = `你是一位慈悲、精通大乘佛法與經典的「陪�
 回答時請結合佛法智慧與實修指引，適當使用 Markdown 格式（如標題、列點、粗體）讓排版清晰易讀。`;
 
 /**
- * 發送問題給 Gemini 並取得讀經小助手回應 (非 Streaming 備用)
- * @param {string} userQuery 使用者提問
- * @param {string} currentSutraText 當前頁面正在閱讀的經文內容（RAG 上下文）
- */
-export async function askSutraAssistant(userQuery, currentSutraText = "") {
-  if (!ai || !apiKey) {
-    return "抱歉 查不到";
-  }
-
-  try {
-    const prompt = `【當前閱讀經文上下文】\n${currentSutraText || "無指定經文段落"}\n\n【使用者提問】\n${userQuery}`;
-    let response;
-    try {
-      response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        config: { systemInstruction: systemPrompt, temperature: 0.7 },
-        contents: prompt,
-      });
-    } catch (e) {
-      response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-lite',
-        config: { systemInstruction: systemPrompt, temperature: 0.7 },
-        contents: prompt,
-      });
-    }
-
-    return response.text || "阿彌陀佛，目前網路連線稍有延遲，請稍後再試。";
-  } catch (error) {
-    console.error("Gemini API 呼叫失敗：", error);
-    return "阿彌陀佛，目前網路連線稍有延遲，請稍後再試。";
-  }
-}
-
-/**
  * 支援 Streaming 打字機效果的 Gemini 讀經小助手回應
  * @param {string} userQuery 使用者提問
  * @param {string} currentSutraText 當前頁面正在閱讀的經文內容（RAG 上下文）
@@ -86,8 +52,19 @@ export async function askSutraAssistantStream(userQuery, currentSutraText = "", 
     return accumulatedText;
   } catch (error) {
     console.error("Gemini Streaming 呼叫失敗：", error);
-    const fallback = "阿彌陀佛，目前網路連線稍有延遲，請稍後再試。";
-    if (onChunk) onChunk(fallback);
-    return fallback;
+    let errorMsg = "阿彌陀佛，目前連線稍有延遲，請稍後再試。";
+    if (error?.message && (error.message.includes('429') || error.message.includes('Quota exceeded') || error.message.includes('rate-limits'))) {
+      errorMsg = "阿彌陀佛，您的 Gemini API 金鑰目前已達免費調用頻率或每日上限 (429 Rate Limit / Quota Exceeded)。請至 Google AI Studio 確認額度或稍後重試。";
+    }
+    if (onChunk) onChunk(errorMsg);
+    return errorMsg;
   }
+}
+
+export async function askSutraAssistant(userQuery, currentSutraText = "") {
+  let result = "";
+  await askSutraAssistantStream(userQuery, currentSutraText, (text) => {
+    result = text;
+  });
+  return result;
 }
