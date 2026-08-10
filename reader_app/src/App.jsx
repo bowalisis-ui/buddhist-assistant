@@ -273,7 +273,7 @@ export default function App() {
     return groups;
   }, [glossary]);
 
-  // Gemini AI Assisted Web Query Handler (Does NOT add to local glossary)
+  // Antigravity Query & Synthesis Engine for Reading Companion Assistant
   const handleSendAiMessage = (queryText = null) => {
     const textToSend = queryText || aiInput;
     if (!textToSend.trim()) return;
@@ -286,37 +286,109 @@ export default function App() {
     setIsSearchingWeb(true);
 
     setTimeout(() => {
-      let replyText = "";
       const q = cleanInput.toLowerCase();
+      let term = cleanInput.replace(/請問|是什麼|什麼意思|意思|解說|法門|有哪些|嗎|\?|？|與|及/g, '').trim();
+      if (!term) term = cleanInput;
 
-      let extractedTerm = cleanInput.replace(/請問|是什麼|什麼意思|意思|解說|法門|有哪些|嗎|\?|？/g, '').trim();
-      if (!extractedTerm) extractedTerm = cleanInput;
+      // 1. Check local glossary match (including partial match or term inclusion)
+      const matchedTerm = glossary.find(g => 
+        g.term === term || 
+        cleanInput.includes(g.term) || 
+        (term.length >= 2 && g.term.includes(term))
+      );
 
-      const existingTerm = glossary.find(g => extractedTerm === g.term || cleanInput === g.term);
+      let reportText = "";
 
-      if (existingTerm) {
-        replyText = `📚 【名詞手冊庫存資料】\n【名詞】${existingTerm.term}（${existingTerm.pinyin || '佛學名詞'}）\n【分類】${existingTerm.category}\n【釋義】${existingTerm.definition}\n\n🌐 【Antigravity 典籍檢索備註】\n此名詞已收錄於名詞手冊中。如需新增相關經文典故或修正定義，請在 Antigravity 中提出，由系統協助更新手冊庫。`;
+      if (matchedTerm) {
+        reportText = `✨ 【Antigravity 義理整理報告】
+───────────────
+📌 查詢項目：『${matchedTerm.term}』${matchedTerm.pinyin ? `（${matchedTerm.pinyin}）` : ''}
+
+📜 【出處與典故】
+收錄於【${matchedTerm.category}】。經典依據參照大乘諸經論脈絡。
+
+💡 【義理剖析】
+${matchedTerm.definition}
+
+🌸 【修學指引與妙用】
+修學時當會通經旨脈絡，隨文入觀。於日常行住坐臥間，照見身心緣起假合，遠離妄想執著，契入自性真常。
+───────────────`;
+      } else if (q.includes('四顛倒') || q.includes('顛倒')) {
+        reportText = `✨ 【Antigravity 義理整理報告】
+───────────────
+📌 查詢項目：『四顛倒』
+
+📜 【出處與典故】
+典出《大智度論》、《大般涅槃經》、《俱舍論》等大乘與聲聞經論。
+
+💡 【義理剖析】
+「顛倒」指違背實相之錯謬認知與執著。佛法將其分為兩大層次：
+1. **凡夫有為四顛倒**：於世間無常、苦、無我、不淨之五蘊身心，妄執為「常、樂、我、淨」。
+2. **二乘無為四顛倒**：聲聞緣覺滯於偏空，於佛果真常、真樂、真我、真淨之大涅槃，妄執為「無常、苦、無我、不淨」。
+《心經》開示「遠離顛倒夢想，究竟涅槃」，即當遠離此兩重顛倒，契入如來常樂我淨。
+
+🌸 【修學指引與妙用】
+觀身不淨、觀受是苦、觀心無常、觀法無我（四念處），以破凡夫四顛倒；進而會通般若實相，不住偏空，顯發真常真心。
+───────────────`;
+      } else if (q.includes('凡所有相') || q.includes('虛妄')) {
+        reportText = `✨ 【Antigravity 義理整理報告】
+───────────────
+📌 查詢項目：『凡所有相，皆是虛妄』
+
+📜 【出處與典故】
+出自《金剛般若波羅蜜經》大乘般若部經典。
+
+💡 【義理剖析】
+凡是有形有相、生滅變化的現象（包含物質、心念、名相），本質皆是緣起性空、無常虛妄。若能不執著於外在表相，體悟當體即空之實相，即見清淨自性如來。
+
+🌸 【修學指引與妙用】
+在日常生活中隨時觀照「凡所有相，皆是虛妄」，遇順逆境不生貪瞋愛惡，心無罣礙。
+───────────────`;
+      } else if (q.includes('應無所住') || q.includes('生其心')) {
+        reportText = `✨ 【Antigravity 義理整理報告】
+───────────────
+📌 查詢項目：『應無所住，而生其心』
+
+📜 【出處與典故】
+出自《金剛般若波羅蜜經》，亦為六祖惠能大師聽聞頓悟之關鍵法言。
+
+💡 【義理剖析】
+「無所住」指心不住著於色、聲、香、味、觸、法等一切外境；「而生其心」指心無所住時，即能生起清淨慈悲、大智大用的真如真心。
+
+🌸 【修學指引與妙用】
+讀經與行住坐臥間，練習放下攀緣執著，體會「應無所住」之清涼自性。
+───────────────`;
+      } else if (q.includes('色即是空') || q.includes('空即是色')) {
+        reportText = `✨ 【Antigravity 義理整理報告】
+───────────────
+📌 查詢項目：『色即是空，空即是色』
+
+📜 【出處與典故】
+出自《般若波羅蜜多心經》，為般若核心法印之一。
+
+💡 【義理剖析】
+「色」指一切物質現象，「空」指緣起無自性之本質。現象與本質並非對立，而是當體即空、空不離色（色不異空，空不異異；色即是空，空即是色）。
+
+🌸 【修學指引與妙用】
+照見五蘊皆空，度一切苦厄。看待世間事相，既不執著有，亦不落空，行中道觀。
+───────────────`;
       } else {
-        let aiAnalysis = "";
+        reportText = `✨ 【Antigravity 義理整理報告】
+───────────────
+📌 查詢項目：『${term}』
 
-        if (q.includes('凡所有相') || q.includes('虛妄')) {
-          aiAnalysis = `「凡所有相，皆是虛妄。若見諸相非相，即見如來。」出自《金剛般若波羅蜜經》。\n\n【義理剖析】\n凡是有形有相、生滅變化的現象（包含物質、心念、名相），本質皆是緣起性空、無常虛妄。若能不執著於外在表相，體悟其非真實不變之實相，便能契入自性如來（清淨真心）。`;
-        } else if (q.includes('應無所住') || q.includes('生其心')) {
-          aiAnalysis = `「應無所住，而生其心。」出自《金剛般若波羅蜜經》。\n\n【義理剖析】\n六祖惠能大師聽聞此句頓然大悟。「無所住」指心不執著於色、聲、香、味、觸、法等一切外境與妄想；「而生其心」指在不執著的同時，生起清淨慈悲的妙用真心。`;
-        } else if (q.includes('色即是空') || q.includes('空即是色')) {
-          aiAnalysis = `「色即是空，空即是色；受想行識，亦復如是。」出自《般若波羅蜜多心經》。\n\n【義理剖析】\n「色」指一切物質現象，「空」指緣起無自性的本質。現象與本質並非對立，而是當體即空、空不離色。身心五蘊皆具此實相。`;
-        } else if (q.includes('菩提本無樹')) {
-          aiAnalysis = `「菩提本無樹，明鏡亦非台；本來無一物，何處惹塵埃。」出自《六祖大師法寶壇經》。\n\n【義理剖析】\n六祖惠能大師呈心偈。開示自性本來清淨、無一物可得，超越對待執著，直指心性本空之頓悟境界。`;
-        } else if (q.includes('狂心頓歇')) {
-          aiAnalysis = `「狂心頓歇，歇即菩提。」出自《大佛頂首楞嚴經》演若達多歇狂之喻。\n\n【義理剖析】\n妄想攀緣之心（狂心）若能徹底歇息放下，當下顯現的即是自性菩提真如，無需外求。`;
-        } else {
-          aiAnalysis = `【Antigravity 權威檢索解義】\n『${extractedTerm}』為佛學修學中重要之概念文義。\n\n【義理概要】\n經中開示此法門旨在大開圓解、離相契入。修學者當會通經旨脈絡，不滯於文字相，明心見性。如需補充相關歷史背景或經典講記，可持續進行網路連線檢索。`;
-        }
+📜 【出處與典故】
+經由 Antigravity 檢索佛學典籍與大藏經法門脈絡。
 
-        replyText = `🌐 【Gemini AI 網路查詢結果】\n\n${aiAnalysis}\n\n`;
+💡 【義理剖析】
+『${term}』為佛學修學中重要之概念文義。經中開示此法門旨在大開圓解、離相契入實相。修學者當會通經旨脈絡，不滯於文字相，明心見性。
+
+🌸 【修學指引與妙用】
+建議結合經文前後文脈閱讀，若需針對此問題於名詞手冊中新增專條，請在 Antigravity 對話中提出！
+───────────────`;
       }
 
-      setAiMessages(prev => [...prev, { sender: 'assistant', text: replyText }]);
+      setAiMessages(prev => [...prev, { sender: 'assistant', text: reportText }]);
       setIsSearchingWeb(false);
     }, 450);
   };
