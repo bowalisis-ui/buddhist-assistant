@@ -20,6 +20,7 @@ import {
 import sutraData from './data/sutraData.json';
 import initialGlossary from './data/glossary.json';
 import { askSutraAssistant } from './services/geminiService';
+import ChatDrawer from './components/ChatDrawer';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('reader'); // 'reader', 'search', 'ai', 'glossary', 'bookmarks'
@@ -110,6 +111,10 @@ export default function App() {
   const currentVolume = useMemo(() => {
     return currentSutra.volumes.find(v => v.volId === selectedVolId) || currentSutra.volumes[0];
   }, [currentSutra, selectedVolId]);
+
+  const currentSutraText = useMemo(() => {
+    return `《${currentSutra.title}》${currentVolume.title}\n${currentVolume.paragraphs ? currentVolume.paragraphs.slice(0, 10).join('\n') : ''}`;
+  }, [currentSutra, currentVolume]);
 
   const volIndex = useMemo(() => {
     return currentSutra.volumes.findIndex(v => v.volId === selectedVolId);
@@ -747,55 +752,13 @@ ${matchedTerm.definition}
           </div>
         )}
 
-        {/* Collapsible AI Drawer (Visible on Reader Tab) */}
+        {/* Collapsible AI ChatDrawer Component (Visible on Reader Tab) */}
         {activeTab === 'reader' && showAiDrawer && (
-          <div className="ai-panel">
-            <div className="ai-header">
-              <div className="ai-title-group">
-                <Bot size={20} color="var(--primary-gold)" />
-                <span style={{ fontWeight: 600, fontFamily: 'var(--font-serif)' }}>陪伴讀經小助手</span>
-              </div>
-              <button className="tool-btn" onClick={() => setShowAiDrawer(false)}>
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="ai-messages-container">
-              {aiMessages.map((msg, i) => (
-                <div key={i} className={`message-bubble ${msg.sender}`}>
-                  <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
-                </div>
-              ))}
-              {isSearchingWeb && (
-                <div className="message-bubble assistant">
-                  <Globe className="spin" size={16} style={{ display: 'inline', marginRight: 6 }} />
-                  正在連線檢索...
-                </div>
-              )}
-            </div>
-
-            <div className="ai-suggestions">
-              <button className="chip-btn" onClick={() => handleSendAiMessage('凡所有相，皆是虛妄')}>凡所有相皆是虛妄</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('應無所住，而生其心')}>應無所住而生其心</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('色即是空')}>色即是空</button>
-            </div>
-
-            <div className="ai-input-area">
-              <input 
-                type="text"
-                className="ai-input-box"
-                placeholder="詢問名詞或經文意思..."
-                value={aiInput}
-                onChange={(e) => setAiInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendAiMessage()}
-              />
-              <button className="ai-send-btn" onClick={() => handleSendAiMessage()}>
-                <Send size={16} />
-              </button>
-            </div>
-          </div>
+          <ChatDrawer 
+            currentSutraText={currentSutraText} 
+            onClose={() => setShowAiDrawer(false)} 
+          />
         )}
-
       </div>
     </div>
   );
