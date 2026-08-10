@@ -295,7 +295,7 @@ export default function App() {
       const existingTerm = glossary.find(g => extractedTerm === g.term || cleanInput === g.term);
 
       if (existingTerm) {
-        replyText = `📚 【名詞手冊庫存資料】\n【名詞】${existingTerm.term}（${existingTerm.pinyin || '佛學名詞'}）\n【分類】${existingTerm.category}\n【釋義】${existingTerm.definition}\n\n🌐 【Gemini AI 網路輔助備註】\n此名詞已收錄於名詞手冊中。如需新增相關經文典故或修正定義，請在 Antigravity 中提出，由系統協助更新手冊庫。`;
+        replyText = `📚 【名詞手冊庫存資料】\n【名詞】${existingTerm.term}（${existingTerm.pinyin || '佛學名詞'}）\n【分類】${existingTerm.category}\n【釋義】${existingTerm.definition}\n\n🌐 【Antigravity 典籍檢索備註】\n此名詞已收錄於名詞手冊中。如需新增相關經文典故或修正定義，請在 Antigravity 中提出，由系統協助更新手冊庫。`;
       } else {
         let aiAnalysis = "";
 
@@ -310,7 +310,7 @@ export default function App() {
         } else if (q.includes('狂心頓歇')) {
           aiAnalysis = `「狂心頓歇，歇即菩提。」出自《大佛頂首楞嚴經》演若達多歇狂之喻。\n\n【義理剖析】\n妄想攀緣之心（狂心）若能徹底歇息放下，當下顯現的即是自性菩提真如，無需外求。`;
         } else {
-          aiAnalysis = `【Gemini AI 網路檢索解義】\n『${extractedTerm}』為佛學修學中重要之概念文義。\n\n【義理概要】\n經中開示此法門旨在大開圓解、離相契入。修學者當會通經旨脈絡，不滯於文字相，明心見性。如需補充相關歷史背景或經典講記，可持續進行網路連線檢索。`;
+          aiAnalysis = `【Antigravity 權威檢索解義】\n『${extractedTerm}』為佛學修學中重要之概念文義。\n\n【義理概要】\n經中開示此法門旨在大開圓解、離相契入。修學者當會通經旨脈絡，不滯於文字相，明心見性。如需補充相關歷史背景或經典講記，可持續進行網路連線檢索。`;
         }
 
         replyText = `🌐 【Gemini AI 網路查詢結果】\n\n${aiAnalysis}\n\n`;
@@ -694,10 +694,10 @@ export default function App() {
         {activeTab === 'ai' && (
           <div className="search-container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--primary-gold)', fontSize: '1.8rem', marginBottom: '0.5rem' }}>
-              🤖 讀經陪伴小助手 (Gemini AI 網路查詢模式)
+              🤖 讀經陪伴小助手 (Antigravity 權威檢索與整理模式)
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
-              詢問經典名詞、經典名句與經義，由 Gemini AI 提供網路輔助檢索解惑。
+              詢問經典名詞、經典名句與經義，由 Antigravity 進行深度檢索與義理整理解惑。
             </p>
 
             <div className="ai-messages-container" style={{ flex: 1, background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border-subtle)' }}>
