@@ -299,7 +299,7 @@ export default function App() {
       let reportText = "";
 
       if (matchedTerm) {
-        reportText = `✨ 【Antigravity 義理整理報告】
+        reportText = `✨ 【小助手 義理整理報告】
 ───────────────
 📌 查詢項目：『${matchedTerm.term}』${matchedTerm.pinyin ? `（${matchedTerm.pinyin}）` : ''}
 
@@ -695,7 +695,7 @@ ${matchedTerm.definition}
         {activeTab === 'ai' && (
           <div className="search-container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--primary-gold)', fontSize: '1.8rem', marginBottom: '0.5rem' }}>
-              🤖 讀經陪伴小助手 (Antigravity 權威檢索與整理模式)
+              🤖 讀經陪伴小助手 (小助手 權威檢索與整理模式)
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
               詢問經典名詞、經典名句與經義，由 Antigravity 進行深度檢索與義理整理解惑。
