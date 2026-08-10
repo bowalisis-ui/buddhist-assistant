@@ -28,13 +28,13 @@ export async function askSutraAssistantStream(userQuery, currentSutraText = "", 
 
     try {
       responseStream = await ai.models.generateContentStream({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3.6-flash',
         config: { systemInstruction: systemPrompt, temperature: 0.7 },
         contents: prompt,
       });
     } catch (errStream) {
       responseStream = await ai.models.generateContentStream({
-        model: 'gemini-2.0-flash-lite',
+        model: 'gemini-2.5-flash',
         config: { systemInstruction: systemPrompt, temperature: 0.7 },
         contents: prompt,
       });
@@ -52,9 +52,9 @@ export async function askSutraAssistantStream(userQuery, currentSutraText = "", 
     return accumulatedText;
   } catch (error) {
     console.error("Gemini Streaming 呼叫失敗：", error);
-    let errorMsg = "阿彌陀佛，目前連線稍有延遲，請稍後再試。";
+    let errorMsg = "阿彌陀佛，目前網路連線稍有延遲，請稍後再試。";
     if (error?.message && (error.message.includes('429') || error.message.includes('Quota exceeded') || error.message.includes('rate-limits'))) {
-      errorMsg = "阿彌陀佛，您的 Gemini API 金鑰目前已達免費調用頻率或每日上限 (429 Rate Limit / Quota Exceeded)。請至 Google AI Studio 確認額度或稍後重試。";
+      errorMsg = "阿彌陀佛，您的 Gemini API 金鑰目前已達免費調用頻率或每日上限 (429 Rate Limit)。請稍後重試。";
     }
     if (onChunk) onChunk(errorMsg);
     return errorMsg;
