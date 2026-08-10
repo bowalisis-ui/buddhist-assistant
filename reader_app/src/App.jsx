@@ -46,7 +46,7 @@ export default function App() {
     }));
   }, [selectedSutraId, selectedVolId]);
 
-  // Dynamic Glossary State with priority merging & purging
+  // Dynamic Glossary State with priority merging & length sorting
   const [glossary, setGlossary] = useState(() => {
     let customItems = [];
     const saved = localStorage.getItem('buddhist_glossary_db');
@@ -69,7 +69,8 @@ export default function App() {
       }
     });
 
-    return Array.from(mergedMap.values());
+    const list = Array.from(mergedMap.values());
+    return list.sort((a, b) => a.term.length - b.term.length || a.term.localeCompare(b.term, 'zh-TW'));
   });
 
   useEffect(() => {
@@ -78,7 +79,8 @@ export default function App() {
 
   // Reset database cache to default
   const handleResetGlossary = () => {
-    setGlossary(initialGlossary.filter(g => !g.term.includes('十種異生')));
+    const sorted = [...initialGlossary.filter(g => !g.term.includes('十種異生'))].sort((a, b) => a.term.length - b.term.length);
+    setGlossary(sorted);
     localStorage.removeItem('buddhist_glossary_db');
   };
 
@@ -305,7 +307,10 @@ export default function App() {
           category: category
         };
 
-        setGlossary(prev => [...prev.filter(g => g.term !== extractedTerm), newGlossaryItem]);
+        setGlossary(prev => {
+          const list = [...prev.filter(g => g.term !== extractedTerm), newGlossaryItem];
+          return list.sort((a, b) => a.term.length - b.term.length || a.term.localeCompare(b.term, 'zh-TW'));
+        });
       }
 
       setAiMessages(prev => [...prev, { sender: 'assistant', text: replyText }]);
@@ -632,7 +637,7 @@ export default function App() {
           <div className="glossary-container">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--primary-gold)', fontSize: '1.8rem' }}>
-                📚 經典名詞與文義辭典庫 ({glossary.length} 筆紀錄)
+                📚 經典名詞與文義辭典庫 (按字數排序：{glossary.length} 筆)
               </h2>
               <button 
                 className="chip-btn" 
@@ -644,13 +649,18 @@ export default function App() {
               </button>
             </div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-              包含預設辭典與您提問過程中自動累積建立的新名詞，結構完整且保護防誤刪。
+              全庫名詞已**按字數由少至多（單字、雙字、三字、四字名詞、多字偈語）**嚴謹排序，方便檢索閱讀。
             </p>
 
             <div className="glossary-grid">
               {glossary.map((item, idx) => (
                 <div key={idx} className="glossary-card">
-                  <div className="glossary-term">{item.term}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div className="glossary-term">{item.term}</div>
+                    <span style={{ fontSize: '0.75rem', background: 'rgba(212,175,55,0.15)', color: 'var(--primary-gold)', padding: '2px 8px', borderRadius: 10 }}>
+                      {item.term.length} 字
+                    </span>
+                  </div>
                   <div className="glossary-pinyin">{item.pinyin}</div>
                   <div className="glossary-def">{item.definition}</div>
                   <span className="glossary-cat">{item.category}</span>
