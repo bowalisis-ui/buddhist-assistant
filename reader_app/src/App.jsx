@@ -46,7 +46,7 @@ export default function App() {
     }));
   }, [selectedSutraId, selectedVolId]);
 
-  // Dynamic Glossary State with priority merging & length sorting
+  // Dynamic Glossary State with priority merging based on complete doctrinal sequence
   const [glossary, setGlossary] = useState(() => {
     let customItems = [];
     const saved = localStorage.getItem('buddhist_glossary_db');
@@ -57,20 +57,19 @@ export default function App() {
     }
     
     const mergedMap = new Map();
-    customItems.forEach(item => {
-      if (item.term && !item.term.includes('十種異生')) {
-        mergedMap.set(item.term, item);
-      }
-    });
-    
     initialGlossary.forEach(item => {
       if (item.term && !item.term.includes('十種異生')) {
         mergedMap.set(item.term, item);
       }
     });
 
-    const list = Array.from(mergedMap.values());
-    return list.sort((a, b) => a.term.length - b.term.length || a.term.localeCompare(b.term, 'zh-TW'));
+    customItems.forEach(item => {
+      if (item.term && !item.term.includes('十種異生')) {
+        mergedMap.set(item.term, item);
+      }
+    });
+
+    return Array.from(mergedMap.values());
   });
 
   useEffect(() => {
@@ -79,8 +78,8 @@ export default function App() {
 
   // Reset database cache to default
   const handleResetGlossary = () => {
-    const sorted = [...initialGlossary.filter(g => !g.term.includes('十種異生'))].sort((a, b) => a.term.length - b.term.length);
-    setGlossary(sorted);
+    const filtered = initialGlossary.filter(g => !g.term.includes('十種異生'));
+    setGlossary(filtered);
     localStorage.removeItem('buddhist_glossary_db');
   };
 
@@ -258,6 +257,17 @@ export default function App() {
     return results;
   }, [searchQuery]);
 
+  // Group Glossary by Doctrinal Category
+  const groupedGlossary = useMemo(() => {
+    const groups = {};
+    glossary.forEach(item => {
+      const cat = item.category || "其他名詞";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(item);
+    });
+    return groups;
+  }, [glossary]);
+
   // Intelligent Response Generator & Progressive Database Builder
   const handleSendAiMessage = (queryText = null, webSearch = false) => {
     const textToSend = queryText || aiInput;
@@ -282,19 +292,19 @@ export default function App() {
       if (existingTerm) {
         replyText = `【${existingTerm.term}】（${existingTerm.pinyin}）\n【分類】${existingTerm.category}\n【釋義】${existingTerm.definition}`;
       } else {
-        let category = "佛學教理";
+        let category = "一、核心教理與宇宙觀";
         let pinyin = "ㄈㄛˊ ㄒㄩㄝˊ ㄇㄧㄥˊ ㄘˊ";
         let def = "";
 
         if (q.includes('心') || q.includes('性') || q.includes('藏')) {
-          category = "佛學教理";
+          category = "二、心性與實相（般若系）";
           def = `指世間萬法真常無妄之本性。《首楞嚴經》開示離諸攀緣妄想，即證常住真心；《金剛經》開示「應無所住而生其心」，離相自現。`;
         } else if (q.includes('五蘊') || q.includes('五陰')) {
-          category = "佛學教理";
+          category = "二、心性與實相（般若系）";
           pinyin = "ㄨˇ ㄩㄣˋ";
-          def = `（亦稱五陰，梵語 Skandha）。指構成世間一切有情身心現象與物質萬物的五種要素：色蘊（物質肉身與六塵外境）、受蘊（苦樂領納感受）、想蘊（取相認知構想）、行蘊（心念遷流造作）、識蘊（主體識別意識）。《心經》開示「照見五蘊皆空，度一切苦厄」，揭示身心緣起假合、當體即空。`;
+          def = `（亦稱五陰，梵語 Skandha）。指構成世間一切有情身心現象與物質萬物的五種要素：色蘊、受蘊、想蘊、行蘊、識蘊。《心經》開示「照見五蘊皆空，度一切苦厄」，揭示身心緣起假合、當體即空。`;
         } else {
-          category = "經典文義";
+          category = "一、核心教理與宇宙觀";
           def = `為經典中重要之佛學概念與文義開示。修學時當會通經旨，不滯文字，離相契入實相。`;
         }
 
@@ -307,10 +317,7 @@ export default function App() {
           category: category
         };
 
-        setGlossary(prev => {
-          const list = [...prev.filter(g => g.term !== extractedTerm), newGlossaryItem];
-          return list.sort((a, b) => a.term.length - b.term.length || a.term.localeCompare(b.term, 'zh-TW'));
-        });
+        setGlossary(prev => [...prev.filter(g => g.term !== extractedTerm), newGlossaryItem]);
       }
 
       setAiMessages(prev => [...prev, { sender: 'assistant', text: replyText }]);
@@ -582,7 +589,7 @@ export default function App() {
               <input 
                 type="text"
                 className="search-input-field"
-                placeholder="請輸入經文關鍵字（例如：五蘊、七處徵心、應無所住、凡所有相皆是虛妄）..."
+                placeholder="請輸入經文關鍵字（例如：五蘊、四聖諦、十二因緣、火宅喻）..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -632,12 +639,12 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 3: Glossary Handbook */}
+        {/* TAB 3: Glossary Handbook Organized by Doctrinal Categories */}
         {activeTab === 'glossary' && (
           <div className="glossary-container">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--primary-gold)', fontSize: '1.8rem' }}>
-                📚 經典名詞與文義辭典庫 (按字數排序：{glossary.length} 筆)
+                📚 經典名詞與文義辭典庫 (按教理邏輯脈絡排列：共 {glossary.length} 筆)
               </h2>
               <button 
                 className="chip-btn" 
@@ -648,25 +655,42 @@ export default function App() {
                 <RefreshCw size={14} /> 重置資料庫
               </button>
             </div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-              全庫名詞已**按字數由少至多（單字、雙字、三字、四字名詞、多字偈語）**嚴謹排序，方便檢索閱讀。
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem' }}>
+              全庫名詞已打破字數限制，完全依據**教理邏輯（四聖諦、十二因緣分項、三法印、五蘊分項、六度、四相、三毒、法華七喻等）**順序嚴謹分區呈現。
             </p>
 
-            <div className="glossary-grid">
-              {glossary.map((item, idx) => (
-                <div key={idx} className="glossary-card">
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div className="glossary-term">{item.term}</div>
-                    <span style={{ fontSize: '0.75rem', background: 'rgba(212,175,55,0.15)', color: 'var(--primary-gold)', padding: '2px 8px', borderRadius: 10 }}>
-                      {item.term.length} 字
-                    </span>
-                  </div>
-                  <div className="glossary-pinyin">{item.pinyin}</div>
-                  <div className="glossary-def">{item.definition}</div>
-                  <span className="glossary-cat">{item.category}</span>
+            {Object.keys(groupedGlossary).map((catName, catIdx) => (
+              <div key={catIdx} style={{ marginBottom: '2.5rem' }}>
+                <h3 style={{ 
+                  fontFamily: 'var(--font-serif)', 
+                  color: 'var(--primary-gold)', 
+                  fontSize: '1.3rem', 
+                  borderBottom: '1px solid var(--border-subtle)', 
+                  paddingBottom: '0.5rem',
+                  marginBottom: '1.2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8
+                }}>
+                  {catName}
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>
+                    ({groupedGlossary[catName].length} 筆名詞)
+                  </span>
+                </h3>
+
+                <div className="glossary-grid">
+                  {groupedGlossary[catName].map((item, idx) => (
+                    <div key={idx} className="glossary-card">
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div className="glossary-term">{item.term}</div>
+                      </div>
+                      <div className="glossary-pinyin">{item.pinyin}</div>
+                      <div className="glossary-def">{item.definition}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -696,10 +720,10 @@ export default function App() {
 
             <div className="ai-suggestions" style={{ marginTop: '1rem', borderRadius: 12 }}>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>快速點擊提問:</span>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('四聖諦')}>四聖諦</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('十二因緣')}>十二因緣</button>
               <button className="chip-btn" onClick={() => handleSendAiMessage('五蘊')}>五蘊</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('三十二相')}>三十二相</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('應無所住')}>應無所住</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('七處徵心')}>七處徵心</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('火宅喻')}>火宅喻</button>
             </div>
 
             <div className="ai-input-area" style={{ borderRadius: 12, marginTop: '0.5rem' }}>
@@ -746,9 +770,9 @@ export default function App() {
             </div>
 
             <div className="ai-suggestions">
+              <button className="chip-btn" onClick={() => handleSendAiMessage('四聖諦')}>四聖諦</button>
+              <button className="chip-btn" onClick={() => handleSendAiMessage('十二因緣')}>十二因緣</button>
               <button className="chip-btn" onClick={() => handleSendAiMessage('五蘊')}>五蘊</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('三十二相')}>三十二相</button>
-              <button className="chip-btn" onClick={() => handleSendAiMessage('應無所住')}>應無所住</button>
             </div>
 
             <div className="ai-input-area">
