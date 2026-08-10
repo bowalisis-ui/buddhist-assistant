@@ -94,7 +94,7 @@ export default function App() {
   const [aiMessages, setAiMessages] = useState([
     {
       sender: 'assistant',
-      text: '阿彌陀佛！我是您的讀經陪伴小助手。\n您在此提出的任何問題，我都將先交由 Gemini AI 進行網路上網檢索與義理整理，再為您提供結構化的剖析報告！\n（💡 備註：名詞手冊維護由 Antigravity 負責編修，本助手專注於 Gemini AI 智慧解惑。）'
+      text: '阿彌陀佛！我是您的讀經陪伴小助手。\n您在此提出的任何問題，我都將先交由 Gemini AI 進行網路上網檢索與義理整理，再為您提供結構化的剖析報告！\n'
     }
   ]);
   const [aiInput, setAiInput] = useState('');
@@ -313,7 +313,7 @@ export default function App() {
           aiAnalysis = `【Gemini AI 網路檢索解義】\n『${extractedTerm}』為佛學修學中重要之概念文義。\n\n【義理概要】\n經中開示此法門旨在大開圓解、離相契入。修學者當會通經旨脈絡，不滯於文字相，明心見性。如需補充相關歷史背景或經典講記，可持續進行網路連線檢索。`;
         }
 
-        replyText = `🌐 【Gemini AI 網路查詢結果】\n\n${aiAnalysis}\n\n💡 （提示：本助手已切換為 Gemini 網路查詢模式，不再自動寫入名詞手冊。若要新增此名詞至名詞手冊，請直接在 Antigravity 中向我提出！）`;
+        replyText = `🌐 【Gemini AI 網路查詢結果】\n\n${aiAnalysis}\n\n`;
       }
 
       setAiMessages(prev => [...prev, { sender: 'assistant', text: replyText }]);
@@ -697,7 +697,7 @@ export default function App() {
               🤖 讀經陪伴小助手 (Gemini AI 網路查詢模式)
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
-              詢問經典名詞、經典名句與經義，由 Gemini AI 提供網路輔助檢索解惑。（名詞手冊維護由 Antigravity 負責）
+              詢問經典名詞、經典名句與經義，由 Gemini AI 提供網路輔助檢索解惑。
             </p>
 
             <div className="ai-messages-container" style={{ flex: 1, background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border-subtle)' }}>
