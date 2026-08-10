@@ -273,7 +273,7 @@ export default function App() {
     return groups;
   }, [glossary]);
 
-  // Antigravity Query & Synthesis Engine for Reading Companion Assistant
+  // Antigravity Strict Glossary Lookup Handler (Replies "抱歉 查不到" if not found)
   const handleSendAiMessage = (queryText = null) => {
     const textToSend = queryText || aiInput;
     if (!textToSend.trim()) return;
@@ -286,11 +286,10 @@ export default function App() {
     setIsSearchingWeb(true);
 
     setTimeout(() => {
-      const q = cleanInput.toLowerCase();
       let term = cleanInput.replace(/請問|是什麼|什麼意思|意思|解說|法門|有哪些|嗎|\?|？|與|及/g, '').trim();
       if (!term) term = cleanInput;
 
-      // 1. Check local glossary match (including partial match or term inclusion)
+      // 1. Check local glossary match
       const matchedTerm = glossary.find(g => 
         g.term === term || 
         cleanInput.includes(g.term) || 
@@ -313,84 +312,14 @@ ${matchedTerm.definition}
 🌸 【修學指引與妙用】
 修學時當會通經旨脈絡，隨文入觀。於日常行住坐臥間，照見身心緣起假合，遠離妄想執著，契入自性真常。
 ───────────────`;
-      } else if (q.includes('四顛倒') || q.includes('顛倒')) {
-        reportText = `✨ 【Antigravity 義理整理報告】
-───────────────
-📌 查詢項目：『四顛倒』
-
-📜 【出處與典故】
-典出《大智度論》、《大般涅槃經》、《俱舍論》等大乘與聲聞經論。
-
-💡 【義理剖析】
-「顛倒」指違背實相之錯謬認知與執著。佛法將其分為兩大層次：
-1. **凡夫有為四顛倒**：於世間無常、苦、無我、不淨之五蘊身心，妄執為「常、樂、我、淨」。
-2. **二乘無為四顛倒**：聲聞緣覺滯於偏空，於佛果真常、真樂、真我、真淨之大涅槃，妄執為「無常、苦、無我、不淨」。
-《心經》開示「遠離顛倒夢想，究竟涅槃」，即當遠離此兩重顛倒，契入如來常樂我淨。
-
-🌸 【修學指引與妙用】
-觀身不淨、觀受是苦、觀心無常、觀法無我（四念處），以破凡夫四顛倒；進而會通般若實相，不住偏空，顯發真常真心。
-───────────────`;
-      } else if (q.includes('凡所有相') || q.includes('虛妄')) {
-        reportText = `✨ 【Antigravity 義理整理報告】
-───────────────
-📌 查詢項目：『凡所有相，皆是虛妄』
-
-📜 【出處與典故】
-出自《金剛般若波羅蜜經》大乘般若部經典。
-
-💡 【義理剖析】
-凡是有形有相、生滅變化的現象（包含物質、心念、名相），本質皆是緣起性空、無常虛妄。若能不執著於外在表相，體悟當體即空之實相，即見清淨自性如來。
-
-🌸 【修學指引與妙用】
-在日常生活中隨時觀照「凡所有相，皆是虛妄」，遇順逆境不生貪瞋愛惡，心無罣礙。
-───────────────`;
-      } else if (q.includes('應無所住') || q.includes('生其心')) {
-        reportText = `✨ 【Antigravity 義理整理報告】
-───────────────
-📌 查詢項目：『應無所住，而生其心』
-
-📜 【出處與典故】
-出自《金剛般若波羅蜜經》，亦為六祖惠能大師聽聞頓悟之關鍵法言。
-
-💡 【義理剖析】
-「無所住」指心不住著於色、聲、香、味、觸、法等一切外境；「而生其心」指心無所住時，即能生起清淨慈悲、大智大用的真如真心。
-
-🌸 【修學指引與妙用】
-讀經與行住坐臥間，練習放下攀緣執著，體會「應無所住」之清涼自性。
-───────────────`;
-      } else if (q.includes('色即是空') || q.includes('空即是色')) {
-        reportText = `✨ 【Antigravity 義理整理報告】
-───────────────
-📌 查詢項目：『色即是空，空即是色』
-
-📜 【出處與典故】
-出自《般若波羅蜜多心經》，為般若核心法印之一。
-
-💡 【義理剖析】
-「色」指一切物質現象，「空」指緣起無自性之本質。現象與本質並非對立，而是當體即空、空不離色（色不異空，空不異異；色即是空，空即是色）。
-
-🌸 【修學指引與妙用】
-照見五蘊皆空，度一切苦厄。看待世間事相，既不執著有，亦不落空，行中道觀。
-───────────────`;
       } else {
-        reportText = `✨ 【Antigravity 義理整理報告】
-───────────────
-📌 查詢項目：『${term}』
-
-📜 【出處與典故】
-經由 Antigravity 檢索佛學典籍與大藏經法門脈絡。
-
-💡 【義理剖析】
-『${term}』為佛學修學中重要之概念文義。經中開示此法門旨在大開圓解、離相契入實相。修學者當會通經旨脈絡，不滯於文字相，明心見性。
-
-🌸 【修學指引與妙用】
-建議結合經文前後文脈閱讀，若需針對此問題於名詞手冊中新增專條，請在 Antigravity 對話中提出！
-───────────────`;
+        // Strictly reply "抱歉 查不到" if not in glossary
+        reportText = "抱歉 查不到";
       }
 
       setAiMessages(prev => [...prev, { sender: 'assistant', text: reportText }]);
       setIsSearchingWeb(false);
-    }, 450);
+    }, 300);
   };
 
   return (
