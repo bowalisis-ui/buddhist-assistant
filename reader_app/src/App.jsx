@@ -39,8 +39,7 @@ export default function App() {
     return [];
   });
 
-  const [confirmItem, setConfirmItem] = useState(null);
-
+  
   useEffect(() => {
     localStorage.setItem('buddhist_pending_deletes', JSON.stringify(pendingDeletes));
   }, [pendingDeletes]);
@@ -762,18 +761,8 @@ ${matchedTerm.definition}
                 <div className="glossary-grid">
                   {groupedGlossary[catName].map((item, idx) => (
                     <div key={idx} className="glossary-card">
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div className="glossary-term">{item.term}</div>
-                        <button 
-                          className="glossary-delete-btn" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setConfirmItem(item);
-                          }}
-                          title="移至待刪除區"
-                        >
-                          <Trash2 size={13} /> 刪除
-                        </button>
                       </div>
                       {item.pinyin && <div className="glossary-pinyin">{item.pinyin}</div>}
                       <div className="glossary-def">{item.definition}</div>
