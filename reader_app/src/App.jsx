@@ -66,7 +66,7 @@ export default function App() {
     });
 
     customItems.forEach(item => {
-      if (item.term && !item.term.includes('十種異生')) {
+      if (item.term && !item.term.includes('十種異生') && !item.term.includes('GEMINI') && !item.term.includes('頭城') && !item.term.includes('導航') && item.term.length < 30) {
         mergedMap.set(item.term, item);
       }
     });
@@ -83,6 +83,15 @@ export default function App() {
     const filtered = initialGlossary.filter(g => !g.term.includes('十種異生'));
     setGlossary(filtered);
     localStorage.removeItem('buddhist_glossary_db');
+  };
+
+  // Delete a specific glossary item
+  const handleDeleteGlossaryItem = (termToDelete) => {
+    setGlossary(prev => {
+      const updated = prev.filter(item => item.term !== termToDelete);
+      localStorage.setItem('buddhist_glossary_db', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   // Reader Text Style State
