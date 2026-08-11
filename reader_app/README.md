@@ -1,16 +1,24 @@
-# React + Vite
+# 📿 讀經陪伴小助手 Web 應用程式 (reader_app)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+本資料夾包含「讀經陪伴小助手」前端 Vite + React 應用程式。
 
-Currently, two official plugins are available:
+## 🔑 API Key 金鑰設定說明
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+本應用程式串接 Google Gemini API 做為讀經小助手的 AI 解讀引擎：
 
-## React Compiler
+1. 請參考資料夾內的 `.env.example` 檔案。
+2. 建立 `.env.local` 檔案並填入您的 Gemini API 金鑰：
+   ```env
+   VITE_GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+3. ⚠️ **安全規範**：切勿將包含真實金鑰的 `.env.local` 上傳至 Git 儲存庫。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 本地開發啟動
 
-## Expanding the Oxlint configuration
+```bash
+# 安裝相依套件
+npm install
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+# 啟動開發伺服器
+npm run dev
+```

@@ -60,11 +60,23 @@ cd reader_app
 npm install
 ```
 
-### 2. 啟動開發伺服器
+### 2. 設定 Gemini API 金鑰 (啟用 AI 讀經小助手)
+請在 `reader_app` 目錄下將 `.env.example` 複製為 `.env.local` 檔案，並填入您的 Gemini API 金鑰：
 ```bash
-npm run dev
+# 在 reader_app 目錄下建立 .env.local 檔案
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
 ```
-瀏覽器開啟 `http://localhost:5173/` 即可開始閱讀與使用！
+> ⚠️ **重要安全提醒**：請務必將個人的 API Key 儲存在 `.env.local` 中（該檔案已被 `.gitignore` 排除），切勿將真實金鑰直接提交 (commit) 至 GitHub！
+
+### 3. 啟動開發伺服器
+- **方式一 (桌面捷徑/批次檔一鍵啟動)**：雙擊桌面上的 **「讀經陪伴小助手」** 捷徑，或雙擊根目錄下的 [`啟動讀經助手.bat`](file:///c:/AI%20Agent/%E8%AE%80%E7%B6%93%E5%8A%A9%E6%89%8B/%E5%95%9F%E5%8B%95%E8%AE%80%E7%B6%93%E5%8A%A9%E6%89%8B.bat)。
+- **方式二 (終端機啟動)**：
+  ```bash
+  cd reader_app
+  npm run dev
+  ```
+
+瀏覽器開啟 [http://localhost:5173/](http://localhost:5173/) 即可開始閱讀與使用！
 
 ---
 
