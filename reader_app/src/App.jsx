@@ -15,7 +15,10 @@ import {
   RefreshCw,
   Clock,
   ArrowRight,
-  X
+  X,
+  Trash2,
+  RotateCcw,
+  AlertTriangle
 } from 'lucide-react';
 import sutraData from './data/sutraData.json';
 import initialGlossary from './data/glossary.json';
