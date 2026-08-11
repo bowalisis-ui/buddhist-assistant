@@ -42,7 +42,7 @@ export async function askSutraAssistantStream(userQuery, currentSutraText = "", 
 
     let accumulatedText = "";
     for await (const chunk of responseStream) {
-      const chunkText = chunk.text();
+      const chunkText = typeof chunk.text === 'function' ? chunk.text() : (chunk.text || chunk.candidates?.[0]?.content?.parts?.[0]?.text || '');
       accumulatedText += chunkText;
       if (onChunk) {
         onChunk(accumulatedText);
