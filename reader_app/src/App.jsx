@@ -101,26 +101,35 @@ export default function App() {
     }));
   }, [selectedSutraId, selectedVolId]);
 
-  // Dynamic Glossary State with priority merging based on complete doctrinal sequence
+  // Dynamic Glossary State with priority merging & pending delete filtering
   const [glossary, setGlossary] = useState(() => {
     let customItems = [];
     const saved = localStorage.getItem('buddhist_glossary_db');
     if (saved) {
-      try { 
-        customItems = JSON.parse(saved); 
-      } catch (e) {}
+      try { customItems = JSON.parse(saved); } catch (e) {}
     }
-    
+
+    let savedPending = [];
+    const pendingSaved = localStorage.getItem('buddhist_pending_deletes');
+    if (pendingSaved) {
+      try { savedPending = JSON.parse(pendingSaved); } catch (e) {}
+    }
+
+    const pendingSet = new Set(savedPending.map(p => p.term));
+
     const mergedMap = new Map();
     initialGlossary.forEach(item => {
-      if (item.term && !item.term.includes('十種異生')) {
+      if (item.term && !item.term.includes('十種異生') && !pendingSet.has(item.term)) {
         mergedMap.set(item.term, item);
       }
     });
 
     customItems.forEach(item => {
-      if (item.term && !item.term.includes('十種異生') && !item.term.includes('GEMINI') && !item.term.includes('頭城') && item.term !== '貪、瞋、癡' && item.term !== '貪瞋癡' && !item.term.includes('導航') && item.term.length < 30) {
-        mergedMap.set(item.term, item);
+      const t = item.term || '';
+      const isQuestion = t.includes('是甚麼') || t.includes('是什麼') || t.includes('什麼意思') || t.includes('什麼') || t.includes('請問');
+      const isTestGarbage = t.includes('十種異生') || t.includes('GEMINI') || t.includes('頭城') || t.includes('導航') || t.includes('101') || t.length > 15;
+      if (t && !isQuestion && !isTestGarbage && !pendingSet.has(t)) {
+        mergedMap.set(t, item);
       }
     });
 
