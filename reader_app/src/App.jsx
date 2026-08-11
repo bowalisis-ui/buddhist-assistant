@@ -66,7 +66,7 @@ export default function App() {
     });
 
     customItems.forEach(item => {
-      if (item.term && !item.term.includes('十種異生') && !item.term.includes('GEMINI') && !item.term.includes('頭城') && !item.term.includes('導航') && item.term.length < 30) {
+      if (item.term && !item.term.includes('十種異生') && !item.term.includes('GEMINI') && !item.term.includes('頭城') && item.term !== '貪、瞋、癡' && item.term !== '貪瞋癡' && !item.term.includes('導航') && item.term.length < 30) {
         mergedMap.set(item.term, item);
       }
     });
@@ -700,8 +700,19 @@ ${matchedTerm.definition}
                 <div className="glossary-grid">
                   {groupedGlossary[catName].map((item, idx) => (
                     <div key={idx} className="glossary-card">
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                         <div className="glossary-term">{item.term}</div>
+                        <button 
+                          className="tool-btn" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteGlossaryItem(item.term);
+                          }}
+                          title="刪除此名詞"
+                          style={{ color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}
+                        >
+                          <X size={12} /> 刪除
+                        </button>
                       </div>
                       {item.pinyin && <div className="glossary-pinyin">{item.pinyin}</div>}
                       <div className="glossary-def">{item.definition}</div>
