@@ -27,6 +27,56 @@ export default function App() {
   const [selectedSutraId, setSelectedSutraId] = useState('shurangama');
   const [selectedVolId, setSelectedVolId] = useState('卷一');
   
+  // Pending Deletes State stored in localStorage
+  const [pendingDeletes, setPendingDeletes] = useState(() => {
+    const saved = localStorage.getItem('buddhist_pending_deletes');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [];
+  });
+
+  const [confirmItem, setConfirmItem] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem('buddhist_pending_deletes', JSON.stringify(pendingDeletes));
+  }, [pendingDeletes]);
+
+  // Handlers for pending delete workflow
+  const handleMoveToPendingDelete = (term) => {
+    const target = glossary.find(g => g.term === term);
+    if (!target) return;
+
+    setGlossary(prev => {
+      const updated = prev.filter(g => g.term !== term);
+      localStorage.setItem('buddhist_glossary_db', JSON.stringify(updated));
+      return updated;
+    });
+
+    setPendingDeletes(prev => {
+      if (prev.some(p => p.term === term)) return prev;
+      return [...prev, target];
+    });
+    setConfirmItem(null);
+  };
+
+  const handleRestoreFromPending = (term) => {
+    const target = pendingDeletes.find(p => p.term === term);
+    if (!target) return;
+
+    setPendingDeletes(prev => prev.filter(p => p.term !== term));
+    setGlossary(prev => {
+      if (prev.some(g => g.term === term)) return prev;
+      const updated = [...prev, target];
+      localStorage.setItem('buddhist_glossary_db', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handlePermanentDelete = (term) => {
+    setPendingDeletes(prev => prev.filter(p => p.term !== term));
+  };
+
   // Bookmarks State stored in localStorage
   const [bookmarks, setBookmarks] = useState(() => {
     const saved = localStorage.getItem('buddhist_bookmarks');
@@ -703,15 +753,14 @@ ${matchedTerm.definition}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                         <div className="glossary-term">{item.term}</div>
                         <button 
-                          className="tool-btn" 
+                          className="glossary-delete-btn" 
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteGlossaryItem(item.term);
+                            setConfirmItem(item);
                           }}
-                          title="刪除此名詞"
-                          style={{ color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}
+                          title="移至待刪除區"
                         >
-                          <X size={12} /> 刪除
+                          <Trash2 size={13} /> 刪除
                         </button>
                       </div>
                       {item.pinyin && <div className="glossary-pinyin">{item.pinyin}</div>}
