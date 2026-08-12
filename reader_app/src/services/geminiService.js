@@ -28,13 +28,13 @@ export async function askSutraAssistantStream(userQuery, currentSutraText = "", 
 
     try {
       responseStream = await ai.models.generateContentStream({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-2.5-flash-lite',
         config: { systemInstruction: systemPrompt, temperature: 0.7 },
         contents: prompt,
       });
     } catch (errStream) {
       responseStream = await ai.models.generateContentStream({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.0-flash-lite',
         config: { systemInstruction: systemPrompt, temperature: 0.7 },
         contents: prompt,
       });
