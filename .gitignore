@@ -2,7 +2,15 @@
 node_modules/
 dist/
 .vite/
-.env.local
+# Sensitive keys & Credentials
+*.json
+!package.json
+!package-lock.json
+!glossary.json
+!sutraData.json
+!.oxlintrc.json
+.env*
+*.local
 
 # Logs and temp
 *.log
