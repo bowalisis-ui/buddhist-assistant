@@ -361,37 +361,6 @@ export default function App() {
 
     setIsSearchingWeb(true);
 
-    let term = cleanInput.replace(/請問|是什麼|什麼意思|意思|解說|法門|有哪些|嗎|\?|？|與|及/g, '').trim();
-    if (!term) term = cleanInput;
-
-    // 1. Check local glossary match first
-    const matchedTerm = glossary.find(g => 
-      g.term === term || 
-      cleanInput.includes(g.term) || 
-      (term.length >= 2 && g.term.includes(term))
-    );
-
-    if (matchedTerm) {
-      setTimeout(() => {
-        const reportText = `✨ 【小助手 義理整理報告】
-───────────────
-📌 查詢項目：『${matchedTerm.term}』${matchedTerm.pinyin ? `（${matchedTerm.pinyin}）` : ''}
-
-📜 【出處與典故】
-收錄於【${matchedTerm.category}】。經典依據參照大乘諸經論脈絡。
-
-💡 【義理剖析】
-${matchedTerm.definition}
-
-🌸 【修學指引與妙用】
-修學時當會通經旨脈絡，隨文入觀。於日常行住坐臥間，照見身心緣起假合，遠離妄想執著，契入自性真常。
-───────────────`;
-        setAiMessages(prev => [...prev, { sender: 'assistant', text: reportText }]);
-        setIsSearchingWeb(false);
-      }, 300);
-      return;
-    }
-
     // 2. Call askSutraAssistant from Gemini Service Module with RAG context
     const currentSutraText = `《${currentSutra.title}》${currentVolume.title}\n${currentVolume.paragraphs ? currentVolume.paragraphs.slice(0, 10).join('\n') : ''}`;
     
