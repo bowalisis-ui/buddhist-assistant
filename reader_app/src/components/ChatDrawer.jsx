@@ -27,37 +27,6 @@ export function ChatDrawer({ currentSutraText, onClose }) {
     setMessages((prev) => [...prev, { sender: 'user', text: userMessage }]);
     setLoading(true);
 
-    let term = userMessage.replace(/請問|是什麼|什麼意思|意思|解說|法門|有哪些|嗎|\?|？|與|及|請解釋/g, '').trim();
-    if (!term) term = userMessage;
-
-    // Check local glossary first
-    const matchedTerm = glossary.find(g => 
-      g.term === term || 
-      userMessage.includes(g.term) || 
-      (term.length >= 2 && g.term.includes(term))
-    );
-
-    if (matchedTerm) {
-      setTimeout(() => {
-        const reportText = `✨ 【小助手 義理整理報告】
-───────────────
-📌 查詢項目：『${matchedTerm.term}』${matchedTerm.pinyin ? `（${matchedTerm.pinyin}）` : ''}
-
-📜 【出處與典故】
-收錄於【${matchedTerm.category}】。經典依據參照大乘諸經論脈絡。
-
-💡 【義理剖析】
-${matchedTerm.definition}
-
-🌸 【修學指引與妙用】
-修學時當會通經旨脈絡，隨文入觀。於日常行住坐臥間，照見身心緣起假合，遠離妄想執著，契入自性真常。
-───────────────`;
-        setMessages((prev) => [...prev, { sender: 'ai', text: reportText }]);
-        setLoading(false);
-      }, 250);
-      return;
-    }
-
     // 2. 準備 Streaming 空白訊息點位（打字機效果）
     setMessages((prev) => [...prev, { sender: 'ai', text: '' }]);
 
