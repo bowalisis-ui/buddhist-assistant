@@ -28,11 +28,12 @@ export async function askSutraAssistantStream(userQuery, currentSutraText = "", 
 
     try {
       responseStream = await ai.models.generateContentStream({
-        model: 'gemini-3.1-flash-lite',
+        model: 'gemini-3.5-flash-lite',
         config: { systemInstruction: systemPrompt, temperature: 0.7 },
         contents: prompt,
       });
     } catch (errStream) {
+      console.warn("gemini-3.5-flash-lite 呼叫失敗，降級使用 gemini-3.1-flash-lite:", errStream);
       responseStream = await ai.models.generateContentStream({
         model: 'gemini-3.1-flash-lite',
         config: { systemInstruction: systemPrompt, temperature: 0.7 },
