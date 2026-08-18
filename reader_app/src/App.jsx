@@ -428,8 +428,21 @@ ${matchedTerm.definition}
               value={selectedSutraId}
               onChange={(e) => handleSutraChange(e.target.value)}
             >
-              {sutraData.map(s => (
-                <option key={s.id} value={s.id}>{s.title}</option>
+              {Object.entries(
+                sutraData.reduce((acc, s) => {
+                  const sect = s.sect || '大乘圓頓與般若 (通宗)';
+                  if (!acc[sect]) acc[sect] = [];
+                  acc[sect].push(s);
+                  return acc;
+                }, {})
+              ).map(([sectName, list]) => (
+                <optgroup key={sectName} label={`📿 【${sectName}】`}>
+                  {list.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {`【${sectName}】${s.title}`}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
@@ -536,6 +549,19 @@ ${matchedTerm.definition}
 
             {/* Header Title */}
             <div className="reader-header">
+              <div style={{
+                display: 'inline-block',
+                padding: '3px 12px',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                color: 'var(--primary-gold, #d4af37)',
+                fontSize: '0.85rem',
+                fontWeight: 'bold',
+                marginBottom: '8px',
+                border: '1px solid rgba(212, 175, 55, 0.3)'
+              }}>
+                📿 宗派歸屬：{currentSutra.sect || '大乘圓頓與般若 (通宗)'}
+              </div>
               <h1 className="sutra-main-title">{currentSutra.title}</h1>
               <h2 className="sutra-volume-title">{currentVolume.title}</h2>
               <div className="sutra-translator">{currentSutra.translator}</div>
