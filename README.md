@@ -1,6 +1,6 @@
-# 📿 讀經陪伴小助手 (Buddhist Scripture Companion App)
+# 📿 讀經陪伴小助手 (Buddhist Scripture Companion App) `v1.0.0 正式版`
 
-> **陪伴您深研經典實相大智慧的輕量級 Web 應用程式與全典籍知識庫。**
+> **陪伴您深研經典實相大智慧的輕量級 Web 應用程式與全典籍知識庫（漢傳大乘八宗 20 大典籍大圓滿收錄）。**
 
 ---
 
