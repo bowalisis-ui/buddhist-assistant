@@ -436,10 +436,10 @@ ${matchedTerm.definition}
                   return acc;
                 }, {})
               ).map(([sectName, list]) => (
-                <optgroup key={sectName} label={`📿 【${sectName}】`}>
+                <optgroup key={sectName} label={`【${sectName}】`}>
                   {list.map(s => (
                     <option key={s.id} value={s.id}>
-                      {`【${sectName}】${s.title}`}
+                      {`　${s.title}`}
                     </option>
                   ))}
                 </optgroup>

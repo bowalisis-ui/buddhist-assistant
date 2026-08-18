@@ -157,9 +157,20 @@ body {
   cursor: pointer;
 }
 
+.custom-select optgroup {
+  background-color: #272522 !important;
+  color: #D4AF37 !important;
+  font-weight: 700;
+  font-style: normal;
+  font-family: var(--font-serif);
+  padding: 8px 6px;
+}
+
 .custom-select option {
-  background: var(--bg-card);
-  color: var(--text-primary);
+  background-color: #1A1917 !important;
+  color: #F5F1E8 !important;
+  padding: 6px 12px;
+  font-weight: 500;
 }
 
 /* Navigation Tabs */
